@@ -1,13 +1,34 @@
 import pytest
 from pydantic import ValidationError
-
+from debugger_agent.agent.actions import RunTestsArgs
 from debugger_agent.agent.actions import (
     AgentAction,
     ReadFileArgs,
     SearchCodeArgs,
 )
 
+def test_run_tests_action_is_valid():
+    action = AgentAction(
+        action="run_tests",
+        reasoning_summary="Reproduce the reported failure.",
+        run_tests=RunTestsArgs(
+            command=["pytest"],
+            timeout_seconds=30,
+        ),
+    )
 
+    assert action.action == "run_tests"
+    assert action.run_tests is not None
+    assert action.run_tests.command == ["pytest"]
+
+
+def test_run_tests_timeout_is_bounded():
+    with pytest.raises(ValidationError):
+        RunTestsArgs(
+            command=["pytest"],
+            timeout_seconds=121,
+        )
+        
 def test_search_action_is_valid():
     action = AgentAction(
         action="search_code",

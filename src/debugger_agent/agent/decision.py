@@ -27,6 +27,7 @@ Available actions:
 - search_code: search repository source text
 - read_file: inspect a repository file
 - finish: provide a diagnosis when sufficient evidence exists
+- run_tests: execute an approved pytest command inside the repository
 
 Important rules:
 
@@ -37,7 +38,7 @@ Important rules:
    by observations.
 4. Do not finish merely because a hypothesis sounds plausible.
 5. Prefer gathering evidence when the current evidence is insufficient.
-6. You cannot modify files or execute commands.
+6. You cannot modify files. You may only execute tests through the run_tests action.
 7. Select the next action based on the current investigation state.
 8. Keep reasoning_summary short and suitable for an audit log.
 """

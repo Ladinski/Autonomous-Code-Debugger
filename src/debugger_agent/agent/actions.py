@@ -21,13 +21,17 @@ class FinishArgs(BaseModel):
     diagnosis: str
     confidence: float = Field(ge=0.0, le=1.0)
 
-
+class RunTestsArgs(BaseModel):
+    command: list[str] = ["pytest"]
+    timeout_seconds: int = Field(default=30, ge=1, le=120)
+    
 class AgentAction(BaseModel):
     action: Literal[
         "list_directory",
         "search_code",
         "read_file",
         "finish",
+        "run_tests",
     ]
 
     reasoning_summary: str
@@ -36,7 +40,7 @@ class AgentAction(BaseModel):
     search_code: SearchCodeArgs | None = None
     read_file: ReadFileArgs | None = None
     finish: FinishArgs | None = None
-
+    run_tests: RunTestsArgs | None = None
     @model_validator(mode="after")
     def validate_selected_action(self):
         selected_args = getattr(self, self.action)
@@ -50,6 +54,7 @@ class AgentAction(BaseModel):
             "list_directory",
             "search_code",
             "read_file",
+            "run_tests",
             "finish",
         )
 

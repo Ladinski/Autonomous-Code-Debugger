@@ -1,5 +1,7 @@
 from pathlib import Path
-
+import pytest
+from pydantic import ValidationError
+from debugger_agent.agent.actions import RunTestsArgs
 from debugger_agent.agent.actions import (
     AgentAction,
     FinishArgs,
@@ -10,6 +12,30 @@ from debugger_agent.agent.actions import (
 from debugger_agent.agent.executor import ToolExecutor
 from debugger_agent.repository.workspace import RepositoryWorkspace
 
+def test_executor_runs_tests(tmp_path: Path):
+    workspace = create_repo(tmp_path)
+
+    (workspace.root / "test_example.py").write_text(
+        "def test_example():\n"
+        "    assert True\n",
+        encoding="utf-8",
+    )
+
+    executor = ToolExecutor(workspace)
+
+    action = AgentAction(
+        action="run_tests",
+        reasoning_summary="Verify repository tests.",
+        run_tests=RunTestsArgs(
+            command=["pytest"],
+        ),
+    )
+
+    observation = executor.execute(action)
+
+    assert observation["success"] is True
+    assert observation["tool"] == "run_tests"
+    assert observation["result"]["exit_code"] == 0
 
 def create_repo(tmp_path: Path) -> RepositoryWorkspace:
     repo = tmp_path / "repo"

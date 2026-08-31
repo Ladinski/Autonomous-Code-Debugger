@@ -4,7 +4,7 @@ from debugger_agent.agent.actions import AgentAction
 from debugger_agent.repository.workspace import RepositoryWorkspace
 from debugger_agent.tools.filesystem import list_directory, read_file
 from debugger_agent.tools.search import search_code
-
+from debugger_agent.tools.testing import run_tests
 
 class ToolExecutionError(RuntimeError):
     """Raised when an agent action cannot be executed."""
@@ -40,6 +40,15 @@ class ToolExecutor:
                     self.workspace,
                     path=action.read_file.path,
                     max_lines=action.read_file.max_lines,
+                )
+
+            elif action.action == "run_tests":
+                assert action.run_tests is not None
+
+                result = run_tests(
+                    self.workspace,
+                    command=action.run_tests.command,
+                    timeout_seconds=action.run_tests.timeout_seconds,
                 )
 
             elif action.action == "finish":
@@ -112,4 +121,12 @@ class ToolExecutor:
                 f"{result['path']}."
             )
 
+        if tool == "run_tests":
+            if result["timed_out"]:
+                return "Test execution timed out."
+
+            return (
+                f"Tests finished with exit code "
+                f"{result['exit_code']}."
+            )
         return "Tool completed."
