@@ -13,7 +13,9 @@ from debugger_agent.agent.decision import AgentDecisionService
 from debugger_agent.agent.executor import ToolExecutor
 from debugger_agent.agent.runner import AgentRunner
 from debugger_agent.repository.workspace import RepositoryWorkspace
-
+from debugger_agent.repository.workspace import (
+    RepositoryWorkspace,
+)
 
 class SequencedDecisionModel:
     def __init__(self):
@@ -322,3 +324,46 @@ def test_runner_stops_at_patch_limit(
     )
 
     assert final_state["patch_attempts"] == 1
+
+def test_runner_produces_trace(
+    tmp_path,
+):
+    decision_model = SequencedDecisionModel()
+
+    decision_service = AgentDecisionService(
+        decision_model
+    )
+
+    executor = ToolExecutor(
+        RepositoryWorkspace(tmp_path)
+    )
+
+    runner = AgentRunner(
+        decision_service=decision_service,
+        executor=executor,
+        max_iterations=5,
+    )
+
+    state = create_state()
+
+    final_state = runner.run(state)
+
+    trace = runner.last_trace
+
+    assert trace is not None
+    assert trace.trace_id
+    assert trace.bug_report == "Example bug."
+    assert trace.completion_status == (
+        final_state["completion_status"]
+    )
+
+    assert len(trace.steps) == 2
+
+    assert trace.steps[0].action == (
+        "list_directory"
+    )
+
+    assert trace.steps[1].action == "finish"
+
+    assert trace.total_duration_ms is not None
+    assert trace.total_duration_ms >= 0
