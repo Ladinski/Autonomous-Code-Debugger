@@ -12,6 +12,7 @@ class ToolObservationRecord(TypedDict):
     tool: str
     success: bool
     summary: str
+    result: dict | None
 
 
 class AgentState(TypedDict):

@@ -29,6 +29,7 @@ def record_step(
             "tool": action.action,
             "success": observation["success"],
             "summary": observation["summary"],
+            "result": observation.get("result"),
         }
     )
 

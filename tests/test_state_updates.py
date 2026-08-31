@@ -166,3 +166,44 @@ def test_finish_marks_investigation_diagnosed():
         updated["final_diagnosis"]
         == "Token validation uses the wrong expiry."
     )
+
+
+
+
+def test_record_step_preserves_observation_result():
+    state = create_state()
+
+    action = AgentAction(
+        action="read_file",
+        reasoning_summary="Inspect auth.",
+        read_file=ReadFileArgs(
+            path="app/auth.py",
+        ),
+    )
+
+    observation = {
+        "tool": "read_file",
+        "success": True,
+        "result": {
+            "path": "app/auth.py",
+            "content": "def login(): pass",
+            "truncated": False,
+            "total_lines": 1,
+            "returned_lines": 1,
+        },
+        "summary": "Read 1 of 1 lines from app/auth.py.",
+    }
+
+    updated = record_step(
+        state,
+        action,
+        observation,
+    )
+
+    stored = updated["tool_observations"][0]
+
+    assert stored["result"] == observation["result"]
+    assert (
+        stored["result"]["content"]
+        == "def login(): pass"
+    )

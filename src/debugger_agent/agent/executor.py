@@ -86,9 +86,15 @@ class ToolExecutor:
         if tool == "list_directory":
             entries = result["entries"]
 
+            location = (
+                "repository root"
+                if result["path"] == "."
+                else result["path"]
+            )
+
             return (
                 f"Listed {len(entries)} entries in "
-                f"{result['path']}."
+                f"{location}."
             )
 
         if tool == "search_code":
