@@ -12,12 +12,13 @@ from debugger_agent.evaluation.models import (
 )
 from debugger_agent.llm.openai import OpenAIDecisionModel
 from debugger_agent.repository.workspace import RepositoryWorkspace
-
+from debugger_agent.observability.storage import save_trace
 
 def run_evaluation_case(
     case: EvaluationCase,
     max_iterations: int = 15,
     max_patch_attempts: int = 3,
+    trace_directory: str | Path | None = None,
 ) -> EvaluationResult:
     with tempfile.TemporaryDirectory() as temp_dir:
         workspace_path = Path(temp_dir) / "repo"
@@ -56,6 +57,19 @@ def run_evaluation_case(
         }
 
         final_state = runner.run(state)
+
+        trace_path = None
+
+        if (
+            trace_directory is not None
+            and runner.last_trace is not None
+        ):
+            saved_trace = save_trace(
+                runner.last_trace,
+                trace_directory,
+            )
+
+            trace_path = str(saved_trace)
 
         expected_file = workspace.resolve_path(
             case.expected_file
@@ -99,6 +113,7 @@ def run_evaluation_case(
             final_diagnosis=final_state[
                 "final_diagnosis"
             ],
+            trace_path=trace_path,
         )
 
 

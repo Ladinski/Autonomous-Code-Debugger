@@ -21,6 +21,7 @@ class EvaluationResult(BaseModel):
     patch_attempts: int
     tests_executed: int
     final_diagnosis: str | None
+    trace_path: str | None = None
 
 
 class EvaluationSummary(BaseModel):

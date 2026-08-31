@@ -66,6 +66,7 @@ def main():
             case,
             max_iterations=15,
             max_patch_attempts=3,
+            trace_directory="traces",
         )
 
         results.append(result)
@@ -99,7 +100,10 @@ def main():
             "DIAGNOSIS:",
             result.final_diagnosis,
         )
-
+        print(
+            "TRACE:",
+            result.trace_path,
+        )
     summary = summarize_results(results)
 
     print()
