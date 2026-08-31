@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from debugger_agent.repository.models import (
     DirectoryEntry,
     DirectoryListing,
@@ -37,7 +39,7 @@ def read_file(
     returned = lines[:max_lines]
 
     return FileContent(
-        path=str(resolved_path.relative_to(workspace.root)),
+        path=resolved_path.relative_to(workspace.root).as_posix(),
         content="\n".join(returned),
         truncated=len(lines) > max_lines,
         total_lines=len(lines),
@@ -59,7 +61,10 @@ def list_directory(
 
     entries: list[DirectoryEntry] = []
 
-    for entry in sorted(resolved_path.iterdir(), key=lambda item: item.name.lower()):
+    for entry in sorted(
+        resolved_path.iterdir(),
+        key=lambda item: item.name.lower(),
+    ):
         if entry.is_symlink():
             entry_type = "symlink"
         elif entry.is_dir():
@@ -72,12 +77,14 @@ def list_directory(
         entries.append(
             DirectoryEntry(
                 name=entry.name,
-                path=str(entry.relative_to(workspace.root)),
+                path=entry.relative_to(workspace.root).as_posix(),
                 type=entry_type,
             )
         )
 
+    relative_path = resolved_path.relative_to(workspace.root)
+
     return DirectoryListing(
-        path=str(resolved_path.relative_to(workspace.root)),
+        path="." if relative_path == Path(".") else relative_path.as_posix(),
         entries=entries,
     )

@@ -50,7 +50,7 @@ def search_code(
 
             matches.append(
                 SearchMatch(
-                    path=str(file_path.relative_to(workspace.root)),
+                    path=file_path.relative_to(workspace.root).as_posix(),
                     line_number=line_number,
                     line=line.strip(),
                 )
