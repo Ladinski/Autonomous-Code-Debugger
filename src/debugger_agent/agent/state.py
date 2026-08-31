@@ -22,7 +22,8 @@ class AgentState(TypedDict):
 
     tool_calls: list[ToolCallRecord]
     tool_observations: list[ToolObservationRecord]
-
+    last_patch_step: int | None
+    last_successful_test_step: int | None
     files_inspected: list[str]
 
     current_hypothesis: str | None
@@ -30,7 +31,7 @@ class AgentState(TypedDict):
 
     patch_attempts: int
     tests_executed: int
-    
+
     completion_status: Literal[
         "investigating",
         "diagnosed",

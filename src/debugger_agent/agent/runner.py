@@ -49,6 +49,39 @@ class AgentRunner:
                 state["completion_status"] = "limit_reached"
                 break
 
+            if (
+                action.action == "finish"
+                and state["last_patch_step"] is not None
+            ):
+                last_test_step = state[
+                    "last_successful_test_step"
+                ]
+
+                if (
+                    last_test_step is None
+                    or last_test_step
+                    <= state["last_patch_step"]
+                ):
+                    observation = {
+                        "tool": "finish",
+                        "success": False,
+                        "result": None,
+                        "summary": (
+                            "Finish rejected: the latest "
+                            "successful patch has not been "
+                            "verified by passing tests."
+                        ),
+                        "error_type": "VerificationRequired",
+                    }
+
+                    state = record_step(
+                        state,
+                        action,
+                        observation,
+                    )
+
+                    continue
+
             observation = self.executor.execute(
                 action
             )
