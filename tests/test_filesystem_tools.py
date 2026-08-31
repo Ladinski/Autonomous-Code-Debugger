@@ -162,3 +162,54 @@ def test_list_directory_cannot_escape_workspace(tmp_path: Path):
 
     with pytest.raises(WorkspaceSecurityError):
         list_directory(workspace, "..")
+
+def test_read_file_rejects_file_over_size_limit(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    file_path = repo / "large.txt"
+    file_path.write_text("x" * 100, encoding="utf-8")
+
+    workspace = RepositoryWorkspace(repo)
+
+    with pytest.raises(FileReadError):
+        read_file(
+            workspace,
+            "large.txt",
+            max_bytes=50,
+        )
+
+
+def test_read_file_accepts_file_within_size_limit(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    file_path = repo / "small.txt"
+    file_path.write_text("hello", encoding="utf-8")
+
+    workspace = RepositoryWorkspace(repo)
+
+    result = read_file(
+        workspace,
+        "small.txt",
+        max_bytes=100,
+    )
+
+    assert result.content == "hello"
+
+
+def test_read_file_rejects_invalid_max_bytes(tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    file_path = repo / "example.txt"
+    file_path.write_text("hello", encoding="utf-8")
+
+    workspace = RepositoryWorkspace(repo)
+
+    with pytest.raises(ValueError):
+        read_file(
+            workspace,
+            "example.txt",
+            max_bytes=0,
+        )

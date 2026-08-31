@@ -16,6 +16,7 @@ def read_file(
     workspace: RepositoryWorkspace,
     path: str,
     max_lines: int = 500,
+    max_bytes: int = 1_000_000,
 ) -> FileContent:
     resolved_path = workspace.resolve_path(path)
 
@@ -27,6 +28,17 @@ def read_file(
 
     if max_lines <= 0:
         raise ValueError("max_lines must be greater than 0.")
+
+    if max_bytes <= 0:
+        raise ValueError("max_bytes must be greater than 0.")
+
+    file_size = resolved_path.stat().st_size
+
+    if file_size > max_bytes:
+        raise FileReadError(
+            f"File exceeds maximum allowed size: {path} "
+            f"({file_size} bytes > {max_bytes} bytes)"
+        )
 
     try:
         text = resolved_path.read_text(encoding="utf-8")
@@ -45,8 +57,6 @@ def read_file(
         total_lines=len(lines),
         returned_lines=len(returned),
     )
-
-
 def list_directory(
     workspace: RepositoryWorkspace,
     path: str = ".",
