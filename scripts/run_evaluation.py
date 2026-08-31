@@ -21,6 +21,20 @@ cases = [
         ),
     ),
     EvaluationCase(
+        name="email_normalization",
+        fixture_path=Path(
+            "tests/fixtures/transform_bug"
+        ),
+        bug_report=(
+            "Email addresses are not being normalized "
+            "consistently. Inputs with uppercase characters "
+            "remain uppercase, which causes matching problems. "
+            "Find the root cause, fix it, and verify the fix."
+        ),
+        expected_file="app/users.py",
+        expected_text="return email.strip().lower()",
+    ),
+    EvaluationCase(
         name="quota_boundary_condition",
         fixture_path=Path(
             "tests/fixtures/boundary_bug"
