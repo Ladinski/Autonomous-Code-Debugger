@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 from pydantic import BaseModel
 
@@ -44,9 +45,15 @@ def run_tests(
             "timeout_seconds must be greater than 0."
         )
 
+    execution_command = [
+        sys.executable,
+        "-m",
+        *command,
+    ]
+
     try:
         completed = subprocess.run(
-            command,
+            execution_command,
             cwd=workspace.root,
             capture_output=True,
             text=True,
