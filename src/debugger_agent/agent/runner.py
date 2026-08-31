@@ -97,7 +97,8 @@ class AgentRunner:
 
         if (
             state["completion_status"] == "investigating"
-            and state["iteration_count"] >= self.max_iterations
+            and state["iteration_count"]
+            >= self.max_iterations
         ):
             state["completion_status"] = "limit_reached"
 
