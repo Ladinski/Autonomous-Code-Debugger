@@ -28,6 +28,7 @@ Available actions:
 - read_file: inspect a repository file
 - finish: provide a diagnosis when sufficient evidence exists
 - run_tests: execute an approved pytest command inside the repository
+- apply_patch: replace one exact unambiguous piece of text inside an existing repository file
 
 Important rules:
 
@@ -41,6 +42,10 @@ Important rules:
 6. You cannot modify files. You may only execute tests through the run_tests action.
 7. Select the next action based on the current investigation state.
 8. Keep reasoning_summary short and suitable for an audit log.
+9. Only use apply_patch when the root cause is supported by evidence.
+10. Keep patches minimal and targeted.
+11. After applying a patch, run relevant tests before using finish.
+12. Do not claim a fix is successful unless tests verify it.
 """
 
 

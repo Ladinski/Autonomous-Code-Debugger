@@ -33,6 +33,13 @@ def record_step(
         }
     )
 
+
+    if action.action == "apply_patch" and observation["success"]:
+        updated["patch_attempts"] += 1
+
+    if action.action == "run_tests":
+        updated["tests_executed"] += 1
+
     if (
         action.action == "read_file"
         and observation["success"]

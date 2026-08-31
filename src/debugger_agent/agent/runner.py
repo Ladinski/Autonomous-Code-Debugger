@@ -10,15 +10,22 @@ class AgentRunner:
         decision_service: AgentDecisionService,
         executor: ToolExecutor,
         max_iterations: int = 10,
+        max_patch_attempts: int = 3,
     ):
         if max_iterations <= 0:
             raise ValueError(
                 "max_iterations must be greater than 0."
             )
 
+        if max_patch_attempts <= 0:
+            raise ValueError(
+                "max_patch_attempts must be greater than 0."
+            )
+
         self.decision_service = decision_service
         self.executor = executor
         self.max_iterations = max_iterations
+        self.max_patch_attempts = max_patch_attempts
 
     def run(
         self,
@@ -33,6 +40,14 @@ class AgentRunner:
             action = self.decision_service.choose_action(
                 state
             )
+
+            if (
+                action.action == "apply_patch"
+                and state["patch_attempts"]
+                >= self.max_patch_attempts
+            ):
+                state["completion_status"] = "limit_reached"
+                break
 
             observation = self.executor.execute(
                 action

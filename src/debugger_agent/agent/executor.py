@@ -5,6 +5,7 @@ from debugger_agent.repository.workspace import RepositoryWorkspace
 from debugger_agent.tools.filesystem import list_directory, read_file
 from debugger_agent.tools.search import search_code
 from debugger_agent.tools.testing import run_tests
+from debugger_agent.tools.patching import replace_text
 
 class ToolExecutionError(RuntimeError):
     """Raised when an agent action cannot be executed."""
@@ -50,6 +51,18 @@ class ToolExecutor:
                     command=action.run_tests.command,
                     timeout_seconds=action.run_tests.timeout_seconds,
                 )
+
+            elif action.action == "apply_patch":
+                assert action.apply_patch is not None
+
+                result = replace_text(
+                    self.workspace,
+                    path=action.apply_patch.path,
+                    old_text=action.apply_patch.old_text,
+                    new_text=action.apply_patch.new_text,
+                )
+
+
 
             elif action.action == "finish":
                 assert action.finish is not None
@@ -125,8 +138,22 @@ class ToolExecutor:
             if result["timed_out"]:
                 return "Test execution timed out."
 
+            exit_code = result["exit_code"]
+
+            if exit_code == 0:
+                return "Tests passed."
+
+            if exit_code == 1:
+                return "Tests ran and failed."
+
             return (
-                f"Tests finished with exit code "
-                f"{result['exit_code']}."
+                f"Pytest exited with code {exit_code}, "
+                "indicating a test execution or collection error."
+            )
+
+        if tool == "apply_patch":
+            return (
+                f"Applied patch to {result['path']} "
+                f"with {result['replacements']} replacement."
             )
         return "Tool completed."

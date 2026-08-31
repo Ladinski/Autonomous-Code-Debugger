@@ -16,6 +16,10 @@ class ReadFileArgs(BaseModel):
     path: str
     max_lines: int = Field(default=500, ge=1, le=1000)
 
+class ApplyPatchArgs(BaseModel):
+    path: str
+    old_text: str = Field(min_length=1)
+    new_text: str
 
 class FinishArgs(BaseModel):
     diagnosis: str
@@ -30,12 +34,13 @@ class AgentAction(BaseModel):
         "list_directory",
         "search_code",
         "read_file",
-        "finish",
         "run_tests",
+        "apply_patch",
+        "finish",
     ]
 
     reasoning_summary: str
-
+    apply_patch: ApplyPatchArgs | None = None
     list_directory: ListDirectoryArgs | None = None
     search_code: SearchCodeArgs | None = None
     read_file: ReadFileArgs | None = None
@@ -55,6 +60,7 @@ class AgentAction(BaseModel):
             "search_code",
             "read_file",
             "run_tests",
+            "apply_patch",
             "finish",
         )
 

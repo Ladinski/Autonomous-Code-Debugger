@@ -4,14 +4,48 @@ from pydantic import ValidationError
 from debugger_agent.agent.actions import RunTestsArgs
 from debugger_agent.agent.actions import (
     AgentAction,
+    ApplyPatchArgs,
     FinishArgs,
     ListDirectoryArgs,
     ReadFileArgs,
+    RunTestsArgs,
     SearchCodeArgs,
 )
 from debugger_agent.agent.executor import ToolExecutor
 from debugger_agent.repository.workspace import RepositoryWorkspace
 
+
+def test_executor_applies_patch(
+    tmp_path: Path,
+):
+    workspace = create_repo(tmp_path)
+
+    executor = ToolExecutor(workspace)
+
+    action = AgentAction(
+        action="apply_patch",
+        reasoning_summary="Fix incorrect return value.",
+        apply_patch=ApplyPatchArgs(
+            path="app/auth.py",
+            old_text="return 'token'",
+            new_text="return 'fixed-token'",
+        ),
+    )
+
+    observation = executor.execute(action)
+
+    assert observation["success"] is True
+    assert observation["tool"] == "apply_patch"
+
+    content = (
+        workspace.root / "app" / "auth.py"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    assert "fixed-token" in content
+
+    
 def test_executor_runs_tests(tmp_path: Path):
     workspace = create_repo(tmp_path)
 

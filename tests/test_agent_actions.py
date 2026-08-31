@@ -1,12 +1,32 @@
 import pytest
 from pydantic import ValidationError
 from debugger_agent.agent.actions import RunTestsArgs
+
 from debugger_agent.agent.actions import (
     AgentAction,
+    ApplyPatchArgs,
     ReadFileArgs,
+    RunTestsArgs,
     SearchCodeArgs,
 )
 
+
+def test_apply_patch_action_is_valid():
+    action = AgentAction(
+        action="apply_patch",
+        reasoning_summary="Replace the incorrect validator.",
+        apply_patch=ApplyPatchArgs(
+            path="app/auth.py",
+            old_text="validate_access_token(refresh_token)",
+            new_text="validate_refresh_token(refresh_token)",
+        ),
+    )
+
+    assert action.action == "apply_patch"
+    assert action.apply_patch is not None
+    assert action.apply_patch.path == "app/auth.py"
+
+    
 def test_run_tests_action_is_valid():
     action = AgentAction(
         action="run_tests",
@@ -28,7 +48,7 @@ def test_run_tests_timeout_is_bounded():
             command=["pytest"],
             timeout_seconds=121,
         )
-        
+
 def test_search_action_is_valid():
     action = AgentAction(
         action="search_code",

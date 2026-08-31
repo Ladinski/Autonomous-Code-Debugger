@@ -28,6 +28,9 @@ class AgentState(TypedDict):
     current_hypothesis: str | None
     final_diagnosis: str | None
 
+    patch_attempts: int
+    tests_executed: int
+    
     completion_status: Literal[
         "investigating",
         "diagnosed",
