@@ -8,6 +8,7 @@ from debugger_agent.agent.runner import AgentRunner
 from debugger_agent.evaluation.models import (
     EvaluationCase,
     EvaluationResult,
+    EvaluationSummary,
 )
 from debugger_agent.llm.openai import OpenAIDecisionModel
 from debugger_agent.repository.workspace import RepositoryWorkspace
@@ -80,9 +81,11 @@ def run_evaluation_case(
                 final_state["completion_status"]
                 == "diagnosed"
             ),
-            expected_fix_present=expected_fix_present,
-            tests_passed_after_patch=_has_verified_patch(
-                final_state
+            expected_fix_present=(
+                expected_fix_present
+            ),
+            tests_passed_after_patch=(
+                _has_verified_patch(final_state)
             ),
             iterations=final_state[
                 "iteration_count"
@@ -117,3 +120,83 @@ def _has_verified_patch(
         return False
 
     return last_test_step > last_patch_step
+
+
+def summarize_results(
+    results: list[EvaluationResult],
+) -> EvaluationSummary:
+    if not results:
+        return EvaluationSummary(
+            total_cases=0,
+            diagnosed_cases=0,
+            successful_fixes=0,
+            verified_fixes=0,
+            fix_rate=0.0,
+            verification_rate=0.0,
+            average_iterations=0.0,
+            average_patch_attempts=0.0,
+            average_test_runs=0.0,
+        )
+
+    total_cases = len(results)
+
+    diagnosed_cases = sum(
+        result.diagnosed
+        for result in results
+    )
+
+    successful_fixes = sum(
+        result.expected_fix_present
+        for result in results
+    )
+
+    verified_fixes = sum(
+        result.tests_passed_after_patch
+        for result in results
+    )
+
+    average_iterations = (
+        sum(
+            result.iterations
+            for result in results
+        )
+        / total_cases
+    )
+
+    average_patch_attempts = (
+        sum(
+            result.patch_attempts
+            for result in results
+        )
+        / total_cases
+    )
+
+    average_test_runs = (
+        sum(
+            result.tests_executed
+            for result in results
+        )
+        / total_cases
+    )
+
+    return EvaluationSummary(
+        total_cases=total_cases,
+        diagnosed_cases=diagnosed_cases,
+        successful_fixes=successful_fixes,
+        verified_fixes=verified_fixes,
+        fix_rate=(
+            successful_fixes / total_cases
+        ),
+        verification_rate=(
+            verified_fixes / total_cases
+        ),
+        average_iterations=(
+            average_iterations
+        ),
+        average_patch_attempts=(
+            average_patch_attempts
+        ),
+        average_test_runs=(
+            average_test_runs
+        ),
+    )

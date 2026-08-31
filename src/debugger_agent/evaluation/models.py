@@ -21,3 +21,15 @@ class EvaluationResult(BaseModel):
     patch_attempts: int
     tests_executed: int
     final_diagnosis: str | None
+
+
+class EvaluationSummary(BaseModel):
+    total_cases: int
+    diagnosed_cases: int
+    successful_fixes: int
+    verified_fixes: int
+    fix_rate: float
+    verification_rate: float
+    average_iterations: float
+    average_patch_attempts: float
+    average_test_runs: float

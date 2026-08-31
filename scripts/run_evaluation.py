@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from debugger_agent.evaluation.models import EvaluationCase
-from debugger_agent.evaluation.runner import run_evaluation_case
+from debugger_agent.evaluation.runner import (
+    run_evaluation_case,
+    summarize_results,
+)
 
 
 cases = [
@@ -32,7 +35,9 @@ cases = [
             "Find the root cause, fix it, and verify the fix."
         ),
         expected_file="app/users.py",
-        expected_text="return email.strip().lower()",
+        expected_text=(
+            "return email.strip().lower()"
+        ),
     ),
     EvaluationCase(
         name="quota_boundary_condition",
@@ -53,36 +58,91 @@ cases = [
 ]
 
 
-for case in cases:
-    result = run_evaluation_case(
-        case,
-        max_iterations=15,
-        max_patch_attempts=3,
-    )
+def main():
+    results = []
+
+    for case in cases:
+        result = run_evaluation_case(
+            case,
+            max_iterations=15,
+            max_patch_attempts=3,
+        )
+
+        results.append(result)
+
+        print()
+        print("=" * 60)
+        print("CASE:", result.case_name)
+        print("STATUS:", result.completion_status)
+        print("DIAGNOSED:", result.diagnosed)
+        print(
+            "EXPECTED FIX PRESENT:",
+            result.expected_fix_present,
+        )
+        print(
+            "VERIFIED AFTER PATCH:",
+            result.tests_passed_after_patch,
+        )
+        print(
+            "ITERATIONS:",
+            result.iterations,
+        )
+        print(
+            "PATCH ATTEMPTS:",
+            result.patch_attempts,
+        )
+        print(
+            "TEST RUNS:",
+            result.tests_executed,
+        )
+        print(
+            "DIAGNOSIS:",
+            result.final_diagnosis,
+        )
+
+    summary = summarize_results(results)
 
     print()
     print("=" * 60)
-    print("CASE:", result.case_name)
-    print("STATUS:", result.completion_status)
-    print("DIAGNOSED:", result.diagnosed)
+    print("EVALUATION SUMMARY")
+    print("=" * 60)
     print(
-        "EXPECTED FIX PRESENT:",
-        result.expected_fix_present,
+        "TOTAL CASES:",
+        summary.total_cases,
     )
     print(
-        "VERIFIED AFTER PATCH:",
-        result.tests_passed_after_patch,
-    )
-    print("ITERATIONS:", result.iterations)
-    print(
-        "PATCH ATTEMPTS:",
-        result.patch_attempts,
+        "DIAGNOSED:",
+        summary.diagnosed_cases,
     )
     print(
-        "TEST RUNS:",
-        result.tests_executed,
+        "SUCCESSFUL FIXES:",
+        summary.successful_fixes,
     )
     print(
-        "DIAGNOSIS:",
-        result.final_diagnosis,
+        "VERIFIED FIXES:",
+        summary.verified_fixes,
     )
+    print(
+        "FIX RATE:",
+        f"{summary.fix_rate:.1%}",
+    )
+    print(
+        "VERIFICATION RATE:",
+        f"{summary.verification_rate:.1%}",
+    )
+    print(
+        "AVG ITERATIONS:",
+        f"{summary.average_iterations:.2f}",
+    )
+    print(
+        "AVG PATCH ATTEMPTS:",
+        f"{summary.average_patch_attempts:.2f}",
+    )
+    print(
+        "AVG TEST RUNS:",
+        f"{summary.average_test_runs:.2f}",
+    )
+
+
+if __name__ == "__main__":
+    main()
